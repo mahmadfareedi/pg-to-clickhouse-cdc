@@ -1,0 +1,19 @@
+{
+  "name": "clickhouse-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "pgsrc.public.your_table",
+    "connection.url": "jdbc:clickhouse://clickhouse:8123/default",
+    "connection.user": "clickhouse",
+    "connection.password": "clickhouse",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "insert.mode": "insert",
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "transforms.unwrap.delete.handling.mode": "none"
+  }
+}
+

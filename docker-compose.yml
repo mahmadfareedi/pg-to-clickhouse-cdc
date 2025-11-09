@@ -1,0 +1,146 @@
+services:
+  kafka:
+    image: redpandadata/redpanda:v23.2.5
+    container_name: kafka
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --overprovisioned
+      - --node-id
+      - "0"
+      - --check=false
+      - --reserve-memory
+      - 0M
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://kafka:9092
+      - --pandaproxy-addr
+      - 0.0.0.0:8082
+      - --advertise-pandaproxy-addr
+      - kafka:8082
+      - --rpc-addr
+      - 0.0.0.0:33145
+      - --advertise-rpc-addr
+      - kafka:33145
+    ports:
+      - "9092:9092"
+
+  connect:
+    build:
+      context: ./connect
+      dockerfile: Dockerfile
+    container_name: connect
+    depends_on:
+      kafka:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      REST_PORT: 8083
+      LISTENERS: http://0.0.0.0:8083
+      REST_ADVERTISED_HOST_NAME: connect
+      REST_ADVERTISED_PORT: 8083
+      GROUP_ID: connect-cluster
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+      STATUS_STORAGE_TOPIC: connect-status
+      CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONFIG_STORAGE_PARTITIONS: "1"
+      OFFSET_STORAGE_PARTITIONS: "1"
+      STATUS_STORAGE_PARTITIONS: "1"
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      PLUGIN_PATH: /kafka/connect,/etc/kafka-connect/jars
+      LOG4J_LOGGERS: org.reflections=ERROR
+      JMXPORT: 5555
+      KAFKA_OPTS: -javaagent:/kafka/libs/jolokia-jvm-1.7.1.jar=port=8778,host=0.0.0.0
+
+  debezium-ui:
+    image: quay.io/debezium/debezium-ui:1.9.6.Final
+    platform: linux/amd64
+    container_name: debezium-ui
+    depends_on:
+      connect:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CONNECT_URI: http://connect:8083
+      KAFKA_CONNECT_URIS: http://connect:8083
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      - kafka
+      - connect
+    ports:
+      - "8081:8081"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_KAFKA_CONNECT_0_NAME: connect
+      KAFKA_CLUSTERS_0_KAFKA_CONNECT_0_ADDRESS: http://connect:8083
+      SERVER_PORT: "8081"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventory
+    command: [
+      "postgres",
+      "-c", "wal_level=logical",
+      "-c", "max_wal_senders=20",
+      "-c", "max_replication_slots=20"
+    ]
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest-alpine
+    container_name: clickhouse
+    ports:
+      - "8123:8123"   # HTTP
+      - "9000:9000"   # Native TCP
+    environment:
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_DB: default
+
+  connect-init:
+    image: curlimages/curl:8.10.1
+    container_name: connect-init
+    depends_on:
+      - connect
+    volumes:
+      - ./connectors:/connectors:ro
+    entrypoint: ["sh","-c"]
+    command: >-
+      '
+      echo "Waiting for Kafka Connect...";
+      for i in `seq 1 120`; do
+        if curl -sf http://connect:8083/ >/dev/null; then echo "Connect is up"; break; fi;
+        sleep 2;
+      done;
+      echo "Posting connectors";
+      for f in /connectors/*.json; do
+        echo "Applying $$f";
+        curl -s -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" --data @"$$f" http://connect:8083/connectors || true;
+      done;
+      sleep infinity'
+
+networks:
+  default:
+    name: cdc-net

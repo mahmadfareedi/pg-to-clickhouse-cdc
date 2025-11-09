@@ -1,0 +1,20 @@
+# OS junk
+aaa
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+**/.env
+.env
+
+# Node/Java/Build caches (just in case)
+node_modules/
+.target/
+.gradle/
+.mvn/
+
+# Editors/IDEs
+.idea/
+.vscode/
+*.iml
