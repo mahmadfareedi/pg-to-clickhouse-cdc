@@ -63,17 +63,6 @@ services:
       JMXPORT: 5555
       KAFKA_OPTS: -javaagent:/kafka/libs/jolokia-jvm-1.7.1.jar=port=8778,host=0.0.0.0
 
-  debezium-ui:
-    image: quay.io/debezium/debezium-ui:1.9.6.Final
-    platform: linux/amd64
-    container_name: debezium-ui
-    depends_on:
-      connect:
-        condition: service_started
-    environment:
-      KAFKA_CONNECT_URI: http://connect:8083
-      KAFKA_CONNECT_URIS: http://connect:8083
-
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -96,8 +85,8 @@ services:
       - "9000:9000"   # Native TCP
     environment:
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
-      CLICKHOUSE_USER: clickhouse
-      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_USER: volume
+      CLICKHOUSE_PASSWORD: msu&2GS%$*sf
       CLICKHOUSE_DB: default
 
   connect-init:
@@ -117,8 +106,10 @@ services:
       done;
       echo "Posting connectors";
       for f in /connectors/*.json; do
-        echo "Applying $$f";
-        curl -s -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" --data @"$$f" http://connect:8083/connectors || true;
+        case "$$f" in
+          *.example.json) echo "Skipping example $$f";;
+          *) echo "Applying $$f"; curl -s -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" --data @"$$f" http://connect:8083/connectors || true;;
+        esac;
       done;
       sleep infinity'
 
@@ -126,7 +117,6 @@ services:
     image: nginx:1.25-alpine
     container_name: ui-proxy
     depends_on:
-      - debezium-ui
       - kafka-ui
     ports:
       - "8080:8080"

@@ -3,22 +3,18 @@ pg-to-clickhouse-cdc
 What’s included
 - Kafka-compatible broker powered by Redpanda (no ZooKeeper, Apple Silicon friendly)
 - Kafka Connect with Debezium Postgres source + JDBC sink + ClickHouse JDBC driver
-- Debezium UI (build and manage source connectors)
-- Debezium UI (runs as amd64 via Docker emulation on Apple Silicon)
-- Kafka UI (manage topics and Kafka Connect, including sink connectors)
+- Kafka UI (manage topics and Kafka Connect, including sink connectors), exposed via an auth proxy
 - ClickHouse server
 
 Quickstart
 - Start the stack: `docker compose up -d --build`
-- Debezium UI: http://localhost:8080 (create the Postgres source connector)
-- Kafka UI: http://localhost:8081 (manage topics and connectors)
+- Kafka UI (with Basic Auth): http://localhost:8080 or http://localhost:8081
 - Kafka Connect REST: http://localhost:8083
 - ClickHouse HTTP: http://localhost:8123 (user `clickhouse`, password `clickhouse`)
 
 Create connectors
-1) Debezium Postgres source (external Postgres on EC2)
-- In Debezium UI, point to Connect at `http://connect:8083` and create a Postgres connector pointing to your EC2 Postgres host.
-- Or copy `connectors/postgres-source.example.json`, fill `database.hostname`, `database.user`, `database.password`, `database.dbname`, then POST it to `http://localhost:8083/connectors`.
+- Debezium Postgres source (external Postgres on EC2)
+- In Kafka UI, use Connect → New Connector → `io.debezium.connector.postgresql.PostgresConnector`, or copy `connectors/postgres-source.example.json`, fill `database.hostname`, `database.user`, `database.password`, `database.dbname`, then POST it to `http://localhost:8083/connectors`.
 - Ensure your Postgres enables logical replication (wal_level=logical, suitable replication slots/publication). Open port 5432 from your Docker host to the EC2 instance and enable SSL if required.
 
 2) ClickHouse sink (via JDBC Sink Connector)
@@ -29,5 +25,6 @@ Create connectors
 
 Notes and tips
 - The JDBC sink here uses `insert.mode=insert` with Debezium’s `ExtractNewRecordState` transform to flatten the CDC envelope. This is append-only. For true upserts in ClickHouse, consider a ReplacingMergeTree table design and/or a dedicated ClickHouse sink connector.
-- For a non-demo Postgres, change the Postgres service or point the Debezium connector at your external database.
+- For an external Postgres, ensure logical replication is enabled and port 5432 is reachable from your Docker host.
+- Basic Auth creds live in `nginx/htpasswd` (format: `user:hash`).
 - This setup is for local/dev use. Add volumes, authentication, and proper replication factors before production.
