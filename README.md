@@ -1,7 +1,6 @@
 pg-to-clickhouse-cdc
 
 What’s included
-- Postgres (`postgres:15`) configured for logical replication
 - Kafka-compatible broker powered by Redpanda (no ZooKeeper, Apple Silicon friendly)
 - Kafka Connect with Debezium Postgres source + JDBC sink + ClickHouse JDBC driver
 - Debezium UI (build and manage source connectors)
@@ -14,14 +13,13 @@ Quickstart
 - Debezium UI: http://localhost:8080 (create the Postgres source connector)
 - Kafka UI: http://localhost:8081 (manage topics and connectors)
 - Kafka Connect REST: http://localhost:8083
-- Postgres: `localhost:5432` (user `postgres`, password `postgres`, db `inventory`)
 - ClickHouse HTTP: http://localhost:8123 (user `clickhouse`, password `clickhouse`)
 
 Create connectors
-1) Debezium Postgres source
-- In Debezium UI, point to Connect at `http://connect:8083` and create a Postgres connector.
-- Or POST this JSON to `http://localhost:8083/connectors`:
-  - File: `connectors/postgres-source.json`
+1) Debezium Postgres source (external Postgres on EC2)
+- In Debezium UI, point to Connect at `http://connect:8083` and create a Postgres connector pointing to your EC2 Postgres host.
+- Or copy `connectors/postgres-source.example.json`, fill `database.hostname`, `database.user`, `database.password`, `database.dbname`, then POST it to `http://localhost:8083/connectors`.
+- Ensure your Postgres enables logical replication (wal_level=logical, suitable replication slots/publication). Open port 5432 from your Docker host to the EC2 instance and enable SSL if required.
 
 2) ClickHouse sink (via JDBC Sink Connector)
 - In Kafka UI, open the Connect tab (cluster: `local`) and create a new sink connector.
