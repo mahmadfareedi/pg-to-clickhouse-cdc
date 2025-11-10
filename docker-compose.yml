@@ -67,6 +67,9 @@ services:
       LOG4J_LOGGERS: org.reflections=ERROR
       JMXPORT: 5555
       KAFKA_OPTS: -javaagent:/kafka/libs/jolokia-jvm-1.7.1.jar=port=8778,host=0.0.0.0
+    networks:
+      - default
+      - postsql
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
@@ -155,3 +158,6 @@ services:
 networks:
   default:
     name: cdc-net
+  postsql:
+    external: true
+    name: postsql_default
