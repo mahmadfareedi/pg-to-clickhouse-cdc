@@ -130,7 +130,6 @@ services:
       - "8082:8082"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/htpasswd:/etc/nginx/htpasswd/users:ro
 
   console:
     image: redpandadata/console:latest

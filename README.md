@@ -9,7 +9,7 @@ What’s included
 
 Quickstart
 - Start the stack: `docker compose up -d --build`
-- UIs (Basic Auth: user `admin`, pass `admin`)
+- UIs
   - Kafka UI: http://localhost:8080
   - Redpanda Console: http://localhost:8081
   - ClickHouse Admin UI (Tabix): http://localhost:8082
@@ -68,7 +68,7 @@ Start CDC and verify
 Notes and tips
 - The JDBC sink here uses `insert.mode=insert` with Debezium’s `ExtractNewRecordState` transform to flatten the CDC envelope. This is append-only. For true upserts in ClickHouse, consider a ReplacingMergeTree table design and/or a dedicated ClickHouse sink connector.
 - For an external Postgres, ensure logical replication is enabled and port 5432 is reachable from your Docker host.
-- Basic Auth creds live in `nginx/htpasswd` (format: `user:hash`). Change with: `openssl passwd -apr1 'NEW_PASSWORD'` and replace the hash.
+- UIs are open locally by default. If exposing to the internet, restrict with a firewall/VPN or add Basic Auth back via the Nginx proxy.
 - This setup is for local/dev use. Add volumes, authentication, and proper replication factors before production.
 
 Automation (optional)
