@@ -1,28 +1,25 @@
 {
-  "name": "clickhouse-sink",
+  "name": "clickhouse-http-sink",
   "config": {
-    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
     "tasks.max": "1",
     "topics": "mydb-replication.public.wide_table_100cols",
-
-    "connection.url": "jdbc:clickhouse://clickhouse:8123/default?auto_commit=true",
-    "connection.user": "volume",
-    "connection.password": "msu&2GS%$*sf",
-    "connection.driver.class": "com.clickhouse.jdbc.ClickHouseDriver",
-
-    "insert.mode": "insert",
-    "auto.create": "true",
-    "auto.evolve": "true",
-
-    "db.timezone": "UTC",
-
-    "table.name.format": "wide_table_100cols",
-
+    
+    "hostname": "clickhouse",
+    "port": "8123",
+    "database": "default",
+    "username": "volume",
+    "password": "msu&2GS%$*sf",
+    
+    "ssl": "false",
+    "exactlyOnce": "false",
+    "tableRefreshInterval": "30000",
+    
     "key.converter": "org.apache.kafka.connect.json.JsonConverter",
     "key.converter.schemas.enable": "false",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
-
+    
     "transforms": "unwrap",
     "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
     "transforms.unwrap.drop.tombstones": "true",
