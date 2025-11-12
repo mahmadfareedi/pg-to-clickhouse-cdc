@@ -1,0 +1,71 @@
+# Personal and system files
+.DS_Store
+.CFUserTextEncoding
+.viminfo
+.lesshst
+.mysql_history
+.psql_history
+.zsh_history
+.zsh_sessions/
+.zcompdump*
+.profile
+.bashrc
+.zshrc*
+.zprofile
+
+# Application directories
+Applications/
+Desktop/
+Documents/
+Downloads/
+Library/
+Movies/
+Music/
+Pictures/
+Public/
+iCloud Drive*/
+
+# Development directories
+dev/
+IdeaProjects/
+tmp-*/
+osrm-data/
+wg-reports/
+
+# Configuration directories
+.aws/
+.ssh/
+.docker/
+.config/
+.cache/
+.local/
+.vscode/
+.cursor/
+.anydesk/
+.gnupg/
+
+# Language/Framework specific
+.pyenv/
+.nvm/
+.npm/
+.m2/
+.composer/
+.gemini/
+.claude*
+.codex/
+.airbyte/
+.dbt/
+.deps.clj/
+.clojure/
+.gitlibs/
+.frappe-redis/
+.pgadmin/
+.ipython/
+.eclipse/
+.ollama/
+.wdm/
+.yarnrc
+.amazon-q.dotfiles.bak/
+
+# Site specific
+site_config.*.json
