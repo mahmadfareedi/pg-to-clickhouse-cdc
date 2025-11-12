@@ -14,9 +14,14 @@ RUN curl -fsSL https://hub-downloads.confluent.io/api/plugins/confluentinc/kafka
     && cp -r /tmp/jdbc/confluentinc-kafka-connect-jdbc*/lib/* /kafka/connect/kafka-connect-jdbc/ \
     && rm -rf /tmp/jdbc /tmp/kafka-connect-jdbc.zip
 
-# Add ClickHouse JDBC driver so the JDBC sink can write to ClickHouse
-RUN curl -fsSL https://repo1.maven.org/maven2/com/clickhouse/clickhouse-jdbc/0.9.4/clickhouse-jdbc-0.9.4-all.jar \
-    -o /etc/kafka-connect/jars/clickhouse-jdbc.jar
+# Add ClickHouse JDBC driver with all dependencies so JDBC sink can write to ClickHouse
+RUN set -eux; \
+    curl -fsSL https://repo1.maven.org/maven2/com/clickhouse/clickhouse-jdbc/0.9.4/clickhouse-jdbc-0.9.4-all-dependencies.jar \
+      -o /tmp/clickhouse-jdbc-all-deps.jar; \
+    cp /tmp/clickhouse-jdbc-all-deps.jar /kafka/connect/kafka-connect-jdbc/; \
+    mv /tmp/clickhouse-jdbc-all-deps.jar /etc/kafka-connect/jars/clickhouse-jdbc-all-deps.jar
+
+# Legacy Yandex ClickHouse JDBC is not installed to avoid classpath conflicts
 
 # Add Jolokia JVM agent for Debezium UI metrics
 RUN mkdir -p /kafka/libs \

@@ -1,0 +1,36 @@
+{
+  "name": "debezium-postgresql-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "topic.prefix": "mydb-replication",
+
+    "database.hostname": "host.docker.internal",
+    "database.port": "15432",
+    "database.user": "cdc_user",
+    "database.password": "cdc_password",
+    "database.dbname": "mydb",
+    "database.sslmode": "disable",
+
+    "plugin.name": "pgoutput",
+    "slot.name": "mydb_slot",
+    "slot.drop.on.stop": "false",
+    "publication.name": "dbz_publication",
+    "snapshot.mode": "initial",
+
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.mydb",
+
+    "schema.include.list": "public",
+    "table.include.list": "public.wide_table_100cols",
+
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+
+    "tombstones.on.delete": "false",
+    "max.batch.size": "2048",
+    "max.queue.size": "8192",
+    "poll.interval.ms": "500"
+  }
+}
