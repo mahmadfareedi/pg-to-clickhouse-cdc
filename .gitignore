@@ -1,20 +1,74 @@
-# OS junk
-aaa
+# CDC Pipeline .gitignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker volumes and data
+volumes/
+data/
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Docker
-*.log
-**/.env
-.env
+# Connector configurations with secrets
+connectors/*-secret.json
+connectors/*-prod.json
 
-# Node/Java/Build caches (just in case)
+# ClickHouse data and logs
+clickhouse-data/
+clickhouse-logs/
+
+# Kafka data
+kafka-data/
+kafka-logs/
+
+# Backup files
+*.bak
+*.backup
+
+# Generated files
+/tmp/*_clickhouse.sql
+/tmp/*_config.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node modules (if any JS tools)
 node_modules/
-.target/
-.gradle/
-.mvn/
 
-# Editors/IDEs
-.idea/
-.vscode/
-*.iml
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+
+# Local configuration overrides
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Performance and monitoring data
+*.log
+*.out
