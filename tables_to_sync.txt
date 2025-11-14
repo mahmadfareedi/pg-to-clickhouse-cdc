@@ -1,0 +1,6 @@
+# Add table names here (one per line)
+# Just edit this file and run the sync script
+users
+products
+orders
+customers

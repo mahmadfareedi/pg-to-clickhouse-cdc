@@ -1,3 +1,15 @@
+FROM eclipse-temurin:17-jdk AS clickhouse-shim-build
+
+WORKDIR /shim
+COPY clickhouse-shim/ /shim/
+RUN set -eux; \
+    mkdir -p /shim/build; \
+    javac -d /shim/build $(find /shim/src -name '*.java'); \
+    jar --create \
+      --file /shim/clickhouse-no-tx-driver.jar \
+      -C /shim/build . \
+      -C /shim META-INF/services/java.sql.Driver
+
 FROM quay.io/debezium/connect:3.3.1
 
 USER root
@@ -20,6 +32,10 @@ RUN set -eux; \
       -o /tmp/clickhouse-jdbc-all-deps.jar; \
     cp /tmp/clickhouse-jdbc-all-deps.jar /kafka/connect/kafka-connect-jdbc/; \
     mv /tmp/clickhouse-jdbc-all-deps.jar /etc/kafka-connect/jars/clickhouse-jdbc-all-deps.jar
+
+# Add the no-op autocommit shim driver from the builder stage
+COPY --from=clickhouse-shim-build /shim/clickhouse-no-tx-driver.jar /kafka/connect/kafka-connect-jdbc/
+COPY --from=clickhouse-shim-build /shim/clickhouse-no-tx-driver.jar /etc/kafka-connect/jars/
 
 # Legacy Yandex ClickHouse JDBC is not installed to avoid classpath conflicts
 
