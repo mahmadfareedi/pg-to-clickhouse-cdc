@@ -1,0 +1,25 @@
+{
+  "name": "payments-postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "payments-live-db.c74eo0akc0v7.eu-west-2.rds.amazonaws.com",
+    "database.port": "5432",
+    "database.user": "postgres_admin",
+    "database.password": "EvenBetterSecret!2025",
+    "database.dbname": "payments_db",
+    "database.server.name": "payments-server",
+    "table.include.list": "public.payments,public.merchant_application,public.user_merchant",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium_payments",
+    "publication.name": "dbz_payments_publication",
+    "topic.prefix": "payments-server",
+    "transforms": "route",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "payments-server.public.(.*)",
+    "transforms.route.replacement": "$1_cdc",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "false"
+  }
+}
