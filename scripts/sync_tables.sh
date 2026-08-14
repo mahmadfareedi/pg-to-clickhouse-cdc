@@ -85,7 +85,7 @@ for table in "${TABLES[@]}"; do
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "tasks.max": "1",
     "topics": "mydb-replication.public.${table}",
-    "connection.url": "jdbc:clickhouse://clickhouse:8123/default",
+    "connection.url": "jdbc:clickhouse+notx://clickhouse:8123/default",
     "connection.user": "volume",
     "connection.password": "msu&2GS%$*sf",
     "table.name.format": "${table}",

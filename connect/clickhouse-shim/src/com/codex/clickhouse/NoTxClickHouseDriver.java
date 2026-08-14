@@ -20,6 +20,7 @@ import java.util.logging.Logger;
  * behavior to the real driver.
  */
 public final class NoTxClickHouseDriver implements Driver {
+    private static final String SHIM_PREFIX = "jdbc:clickhouse+notx://";
     private final Driver delegate;
 
     public NoTxClickHouseDriver() throws SQLException {
@@ -29,6 +30,13 @@ public final class NoTxClickHouseDriver implements Driver {
         } catch (Exception e) {
             throw new SQLException("Unable to load com.clickhouse.jdbc.ClickHouseDriver", e);
         }
+    }
+
+    private static String normalizeUrl(String url) {
+        if (url != null && url.startsWith(SHIM_PREFIX)) {
+            return "jdbc:clickhouse://" + url.substring(SHIM_PREFIX.length());
+        }
+        return url;
     }
 
     private Connection wrap(Connection connection) {
@@ -59,12 +67,15 @@ public final class NoTxClickHouseDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        Connection conn = delegate.connect(url, info);
+        Connection conn = delegate.connect(normalizeUrl(url), info);
         return wrap(conn);
     }
 
     @Override
     public boolean acceptsURL(String url) throws SQLException {
+        if (url != null && url.startsWith(SHIM_PREFIX)) {
+            return true;
+        }
         return delegate.acceptsURL(url);
     }
 
