@@ -36,6 +36,7 @@ RUN set -eux; \
 # Add the no-op autocommit shim driver from the builder stage
 COPY --from=clickhouse-shim-build /shim/clickhouse-no-tx-driver.jar /kafka/connect/kafka-connect-jdbc/
 COPY --from=clickhouse-shim-build /shim/clickhouse-no-tx-driver.jar /etc/kafka-connect/jars/
+COPY --from=clickhouse-shim-build /shim/clickhouse-no-tx-driver.jar /kafka/libs/
 
 # Legacy Yandex ClickHouse JDBC is not installed to avoid classpath conflicts
 

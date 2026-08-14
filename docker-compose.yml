@@ -99,7 +99,7 @@ services:
       PLUGIN_PATH: /kafka/connect,/etc/kafka-connect/jars
       LOG4J_LOGGERS: org.reflections=ERROR
       JMXPORT: 5555
-      KAFKA_OPTS: -Xmx256m -Xms128m -javaagent:/kafka/libs/jolokia-jvm-1.7.1.jar=port=8778,host=0.0.0.0 -Djdbc.drivers=com.clickhouse.jdbc.ClickHouseDriver
+      KAFKA_OPTS: -Xmx256m -Xms128m -javaagent:/kafka/libs/jolokia-jvm-1.7.1.jar=port=8778,host=0.0.0.0 -Djdbc.drivers=com.codex.clickhouse.NoTxClickHouseDriver,com.clickhouse.jdbc.ClickHouseDriver
     logging:
       driver: "json-file"
       options:

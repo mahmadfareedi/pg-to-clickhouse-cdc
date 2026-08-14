@@ -20,7 +20,8 @@ from PostgreSQL into ClickHouse and then keep it in sync from the CDC stream.
 ## CDC into ClickHouse
 - The new sink definition `connectors/clickhouse-orders-sink.json` subscribes to
   `mydb-replication.public.orders` and writes directly into the ClickHouse
-  `orders` table. The connector is registered automatically by the
+  `orders` table via the `jdbc:clickhouse+notx://...` URL so the shim intercepts
+  `setAutoCommit(false)`. The connector is registered automatically by the
   `connect-init` container at startup; to register it manually run:
   `curl -X POST -H 'Content-Type: application/json' --data @connectors/clickhouse-orders-sink.json \`
   `http://localhost:8083/connectors`.
@@ -37,6 +38,10 @@ from PostgreSQL into ClickHouse and then keep it in sync from the CDC stream.
 - Ensure the ClickHouse table schema matches the fields Debezium emits. Update
   `create_tables.sql` or run custom DDL before starting the sink when new
   columns are added.
+- Existing sink connectors created before the shim change need to be updated so
+  their `connection.url` also uses `jdbc:clickhouse+notx://...`.
 - If the ClickHouse sink errors with `setAutoCommit(false) is not supported`,
   rebuild the Connect image to pick up the new autocommit shim and redeploy the
-  connectors: `docker compose build connect && docker compose up -d connect`.
+  connectors: `docker compose build connect && docker compose up -d connect`,
+  then `curl -X PUT ...connection.url=jdbc:clickhouse+notx://...` to refresh the
+  sink configs.
